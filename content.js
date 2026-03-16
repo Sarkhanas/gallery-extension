@@ -1,4 +1,4 @@
-// content.js - ПОЛНАЯ ВЕРСИЯ С ИСПРАВЛЕННЫМ СЕКУНДОМЕРОМ
+// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ
 (function () {
   "use strict";
 
@@ -26,10 +26,7 @@
 
     // Универсальный метод для логирования
     log(...args) {
-      // Всегда показываем логи секундомера
-      if (args[0] && args[0].includes('секундомер')) {
-        console.log("[Zolak Gallery]:", ...args);
-      } else if (this.debugMode) {
+      if (this.debugMode) {
         console.log("[Zolak Gallery]:", ...args);
       }
     }
@@ -232,6 +229,7 @@
       if (this.stopwatchStartTime) {
         const elapsedSeconds = (Date.now() - this.stopwatchStartTime) / 1000;
         const formattedTime = this.formatTime(elapsedSeconds);
+        // Прямой console.log для времени рендера (всегда показываем)
         console.log(`[Zolak Gallery] Время рендера: ${formattedTime}`);
         
         // Сохраняем последнее время для истории
@@ -252,6 +250,7 @@
 
     toggleDebug() {
       this.debugMode = !this.debugMode;
+      // Это сообщение показываем всегда, чтобы пользователь знал состояние
       console.log(
         `[Zolak Gallery] Режим отладки: ${this.debugMode ? "включен" : "выключен"}`,
       );
