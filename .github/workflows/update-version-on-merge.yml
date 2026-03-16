@@ -1,0 +1,28 @@
+name: Update Extension Version
+
+on:
+  pull_request:
+    types: [closed]
+    branches: [main] # Или ваша основная ветка, например, 'master'
+
+jobs:
+  update-version:
+    # Запускаем задачу только если PR был принят (мерж), а не просто закрыт
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Проверяем код
+      - uses: actions/checkout@v3
+        with:
+          # Важно: используем токен, чтобы следующий коммит сам запускал проверки
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # 2. Запускаем action для обновления версии
+      - name: Update Chrome Extension Version
+        uses: mmrakt/update-chrome-extension-version-action@v0.1.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          # Указываем путь к вашему манифесту, если он не в корне
+          manifest_file_path: "manifest.json"
+          # Опционально: можно отключить создание релиза, если не нужно
+          # create_release_note: false
