@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "Zolak Media Gallery",
+  "version": "1.7.1",
+  "description": "Преобразует горизонтальный скролл медиа-файлов в вертикальную галерею 5x5 + секундомер для Studio",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://dev.admin.zolak.tech/products",
+        "https://dev.admin.zolak.tech/materials",
+        "https://eu.admin.zolak.tech/products",
+        "https://eu.admin.zolak.tech/materials",
+        "https://dev.studio.zolak.tech/studios/*"
+      ],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "icons": {
+    "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

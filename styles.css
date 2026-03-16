@@ -1,0 +1,337 @@
+/* styles.css - ПОЛНАЯ ВЕРСИЯ С СЕКУНДОМЕРОМ */
+.zolak-gallery-button {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 50px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+  transition: all 0.2s ease;
+  margin: 10px 0;
+  z-index: 1000;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.zolak-gallery-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #4f52e6 0%, #7c3aed 100%);
+}
+
+.zolak-gallery-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+}
+
+.zolak-gallery-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.95);
+  width: 90vw;
+  max-width: 1200px;
+  height: 90vh;
+  max-height: 900px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  display: none;
+  flex-direction: column;
+  z-index: 10000;
+  opacity: 0;
+  transition: all 0.3s ease-out;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.zolak-gallery-open {
+  opacity: 1 !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+}
+
+.zolak-gallery-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 28px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border-radius: 24px 24px 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.zolak-gallery-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.zolak-gallery-counter {
+  font-size: 14px;
+  font-weight: 400;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 50px;
+  letter-spacing: 0.5px;
+}
+
+.zolak-gallery-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Кнопка Debug */
+.zolak-debug-button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.5px;
+}
+
+.zolak-debug-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.zolak-debug-button.debug-on {
+  background: #10b981;
+  border-color: #059669;
+}
+
+.zolak-debug-button.debug-on:hover {
+  background: #059669;
+}
+
+/* Кнопка закрытия */
+.zolak-gallery-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+.zolak-gallery-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg);
+}
+
+/* Контейнер с прокруткой */
+.zolak-gallery-items {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  background: #f5f5f5;
+  
+  /* Минимальная высота */
+  min-height: 0;
+  height: 100%;
+  
+  /* Flexbox для вертикального расположения */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  
+  /* Стилизация скроллбара */
+  scrollbar-width: thin;
+  scrollbar-color: #6366f1 #e0e0e0;
+  
+  /* Относительное позиционирование */
+  position: relative;
+}
+
+/* Ряд с элементами */
+.zolak-gallery-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 100%;
+  flex-wrap: nowrap;
+}
+
+/* Оригинальные элементы сохраняют свои стили, 
+   мы только задаем им ширину в ряду */
+.zolak-gallery-row > [draggable="true"] {
+  flex: 1 1 0;
+  min-width: 0;
+  margin: 0 !important; /* Убираем возможные оригинальные отступы */
+}
+
+/* Кастомный скроллбар */
+.zolak-gallery-items::-webkit-scrollbar {
+  width: 12px;
+}
+
+.zolak-gallery-items::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 6px;
+}
+
+.zolak-gallery-items::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border-radius: 6px;
+  border: 3px solid #f1f1f1;
+}
+
+.zolak-gallery-items::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, #4f52e6 0%, #7c3aed 100%);
+}
+
+/* Индикаторы прокрутки */
+.zolak-gallery-items::before,
+.zolak-gallery-items::after {
+  content: '';
+  position: sticky;
+  left: 0;
+  right: 0;
+  height: 40px;
+  pointer-events: none;
+  z-index: 30;
+  transition: opacity 0.2s;
+  opacity: 0;
+}
+
+.zolak-gallery-items::before {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.05), transparent);
+}
+
+.zolak-gallery-items::after {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.05), transparent);
+}
+
+.zolak-gallery-items.zolak-scroll-top::before {
+  opacity: 1;
+}
+
+.zolak-gallery-items.zolak-scroll-bottom::after {
+  opacity: 1;
+}
+
+/* Пустое состояние */
+.zolak-gallery-empty {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #9ca3af;
+  font-size: 16px;
+  font-style: italic;
+  text-align: center;
+  width: 100%;
+  padding: 40px;
+}
+
+/* ========== СТИЛИ ДЛЯ СЕКУНДОМЕРА ========== */
+.zolak-stopwatch {
+  text-align: center;
+  margin: 16px auto;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 50px;
+  color: white;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  letter-spacing: 2px;
+  transition: all 0.3s ease;
+  width: fit-content;
+  min-width: 200px;
+  backdrop-filter: blur(5px);
+  animation: stopwatch-appear 0.3s ease forwards;
+}
+
+.zolak-stopwatch-time {
+  display: inline-block;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 30px;
+  font-feature-settings: "tnum";
+}
+
+@keyframes stopwatch-appear {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 1000px) {
+  .zolak-gallery-items {
+    padding: 20px;
+    gap: 16px;
+  }
+  
+  .zolak-gallery-row {
+    gap: 16px;
+  }
+}
+
+@media (max-width: 800px) {
+  .zolak-gallery-items {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .zolak-gallery-row {
+    gap: 12px;
+  }
+  
+  .zolak-stopwatch {
+    font-size: 20px;
+    padding: 10px 20px;
+    min-width: 180px;
+  }
+}
+
+@media (max-width: 600px) {
+  .zolak-gallery-items {
+    padding: 12px;
+    gap: 10px;
+  }
+  
+  .zolak-gallery-row {
+    gap: 10px;
+  }
+  
+  .zolak-stopwatch {
+    font-size: 18px;
+    padding: 8px 16px;
+    min-width: 160px;
+  }
+}
