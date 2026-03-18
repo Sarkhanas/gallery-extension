@@ -58,8 +58,9 @@
           return;
         }
 
-        // Запускаем наблюдение за диалогом рендера только для studio
-        if (hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) {
+        // Запускаем наблюдение за диалогом рендера только для studio и scenes
+        if (hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/studios/") || 
+            hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/") ) {
           this.log("Запуск секундомера для studios");
           this.observeRenderDialog();
         }

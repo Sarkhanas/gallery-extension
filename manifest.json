@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Zolak Media Gallery",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "description": "Преобразует горизонтальный скролл медиа-файлов в вертикальную галерею 5x5 + секундомер для Studio",
   "update_url": "https://raw.githubusercontent.com/Sarkhanas/gallery-extension/main/updates.xml",
   "permissions": [
@@ -14,7 +14,8 @@
         "https://dev.admin.zolak.tech/materials",
         "https://eu.admin.zolak.tech/products",
         "https://eu.admin.zolak.tech/materials",
-        "https://dev.studio.zolak.tech/studios/*"
+        "https://dev.studio.zolak.tech/studios/*",
+        "https://dev.studio.zolak.tech/scenes/"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],
