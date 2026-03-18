@@ -1,4 +1,4 @@
-// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ
+// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ И ИСПРАВЛЕНИЕМ ENTER
 (function () {
   "use strict";
 
@@ -390,17 +390,58 @@
         Gallery
       `;
 
+      // Отключаем возможность фокуса на кнопке
+      this.button.setAttribute('tabindex', '-1');
+      
+      // Предотвращаем стандартное поведение для всех типов событий
+      this.button.addEventListener('mousedown', (e) => e.preventDefault());
+      this.button.addEventListener('mouseup', (e) => e.preventDefault());
+      
       let clickTimeout = null;
-      this.button.addEventListener("click", () => {
+      
+      // Основной обработчик клика с проверкой на enter
+      this.button.addEventListener("click", (event) => {
+        // Предотвращаем стандартное поведение в любом случае
+        event.preventDefault();
+        event.stopPropagation();
+        
+        // Проверяем, не вызвано ли событие с клавиатуры
+        // event.detail === 0 означает, что событие вызвано программно или с клавиатуры
+        if (event.detail === 0) {
+          this.log("Клик с клавиатуры предотвращен");
+          return;
+        }
+        
         if (clickTimeout) return;
         clickTimeout = setTimeout(() => {
           this.toggleGallery();
           clickTimeout = null;
         }, 100);
       });
+      
+      // Отдельный обработчик для клавиши Enter
+      this.button.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          event.stopPropagation();
+          this.log("Нажатие Enter предотвращено");
+          
+          if (clickTimeout) return;
+          clickTimeout = setTimeout(() => {
+            this.toggleGallery();
+            clickTimeout = null;
+          }, 100);
+        }
+      });
+      
+      // Защита от фокуса при табуляции
+      this.button.addEventListener("focus", (event) => {
+        event.preventDefault();
+        this.button.blur(); // Принудительно убираем фокус
+      });
 
       parent.insertBefore(this.button, this.originalContainer);
-      this.log("Кнопка Gallery создана");
+      this.log("Кнопка Gallery создана и защищена от срабатывания по Enter");
     }
 
     createGalleryContainer() {
