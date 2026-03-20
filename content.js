@@ -1,4 +1,4 @@
-// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ, ИСПРАВЛЕНИЕМ ENTER И OVERLAY (КВАДРАТ ПО ВЫСОТЕ)
+// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ, ИСПРАВЛЕНИЕМ ENTER И OVERLAY (УЛУЧШЕННЫЙ ПОИСК)
 (function () {
   "use strict";
 
@@ -13,14 +13,14 @@
       this.currentHighlightedElement = null;
       this.isSearching = false;
       this.debugMode = false; // По умолчанию выключен
-
+      
       // Свойства для секундомера
       this.stopwatchInterval = null;
       this.stopwatchStartTime = null;
       this.stopwatchElement = null;
       this.stopwatchContainer = null;
       this.isRendering = false;
-      this.lastRenderText = "";
+      this.lastRenderText = '';
       this.renderObserver = null;
 
       // Свойства для overlay функционала
@@ -29,6 +29,7 @@
       this.overlayControlsContainer = null;
       this.debugSwitch = null;
       this.overlaySwitch = null;
+      this.canvasContainerRef = null;
     }
 
     // Универсальный метод для логирования
@@ -50,7 +51,7 @@
       try {
         const hostname = window.location.hostname;
         const fullUrl = window.location.href;
-
+        
         const isValidDomain =
           hostname.includes("dev.admin.zolak.tech") ||
           hostname.includes("eu.admin.zolak.tech") ||
@@ -66,21 +67,15 @@
         }
 
         // Запускаем наблюдение за диалогом рендера только для studio и scenes
-        if (
-          (hostname.includes("studio.zolak.tech") &&
-            fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) ||
-          (hostname.includes("studio.zolak.tech") &&
-            fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/"))
-        ) {
+        if (hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/studios/") || 
+            hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/") ) {
           this.log("Запуск секундомера для studios");
           this.observeRenderDialog();
         }
 
         // Добавляем контролы для studio страниц
         if (fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) {
-          this.log(
-            "Обнаружена страница studio, добавляем контролы Overlay и Debug",
-          );
+          this.log("Обнаружена страница studio, добавляем контролы Overlay и Debug");
           this.createOverlayControls();
         }
 
@@ -117,7 +112,7 @@
 
       observer.observe(document.body, {
         childList: true,
-        subtree: true,
+        subtree: true
       });
     }
 
@@ -128,8 +123,8 @@
       this.log("Найден элемент сортировки, внедряем контролы");
 
       // Создаем контейнер для контролов
-      this.overlayControlsContainer = document.createElement("div");
-      this.overlayControlsContainer.className = "zolak-overlay-controls";
+      this.overlayControlsContainer = document.createElement('div');
+      this.overlayControlsContainer.className = 'zolak-overlay-controls';
       this.overlayControlsContainer.style.cssText = `
         display: flex;
         align-items: center;
@@ -137,16 +132,16 @@
         margin-right: 16px;
       `;
 
-      // Создаем Debug switch
-      this.debugSwitch = this.createSwitchButton("Debug", this.debugMode);
-      this.debugSwitch.addEventListener("click", () => {
+      // Создаем Debug switch (текст всегда "Debug")
+      this.debugSwitch = this.createSwitchButton('Debug', this.debugMode);
+      this.debugSwitch.addEventListener('click', () => {
         this.toggleDebug();
         this.updateSwitchState(this.debugSwitch, this.debugMode);
       });
 
-      // Создаем Overlay switch
-      this.overlaySwitch = this.createSwitchButton("Overlay", false);
-      this.overlaySwitch.addEventListener("click", () => {
+      // Создаем Overlay switch (текст всегда "Overlay")
+      this.overlaySwitch = this.createSwitchButton('Overlay', false);
+      this.overlaySwitch.addEventListener('click', () => {
         this.toggleOverlay();
         this.updateSwitchState(this.overlaySwitch, this.overlayActive);
       });
@@ -155,38 +150,33 @@
       this.overlayControlsContainer.appendChild(this.overlaySwitch);
 
       // Вставляем перед элементом сортировки
-      sortElement.parentNode.insertBefore(
-        this.overlayControlsContainer,
-        sortElement,
-      );
-
+      sortElement.parentNode.insertBefore(this.overlayControlsContainer, sortElement);
+      
       this.log("Контролы успешно внедрены");
     }
 
     // Создание стилизованной switch-кнопки
     createSwitchButton(text, isActive) {
-      const button = document.createElement("button");
-      button.className = `zolak-switch-button ${isActive ? "active" : ""}`;
-      button.setAttribute("data-state", isActive ? "on" : "off");
+      const button = document.createElement('button');
+      button.className = `zolak-switch-button ${isActive ? 'active' : ''}`;
+      button.setAttribute('data-state', isActive ? 'on' : 'off');
       button.innerHTML = `
-    <span class="zolak-switch-label">${text}</span>
-    <span class="zolak-switch-slider">
-      <span class="zolak-switch-knob"></span>
-    </span>
-  `;
-
+        <span class="zolak-switch-label">${text}</span>
+        <span class="zolak-switch-slider">
+          <span class="zolak-switch-knob"></span>
+        </span>
+      `;
+      
       return button;
     }
 
-    // Обновление состояния switch-кнопки (текст больше не меняется)
+    // Обновление состояния switch-кнопки (текст НЕ меняется)
     updateSwitchState(button, isActive) {
       if (!button) return;
-
-      button.classList.toggle("active", isActive);
-      button.setAttribute("data-state", isActive ? "on" : "off");
-
-      // Текст больше не меняется - надпись всегда остается "Debug" и "Overlay"
-      // Можно оставить эту функцию пустой или просто обновлять классы
+      
+      button.classList.toggle('active', isActive);
+      button.setAttribute('data-state', isActive ? 'on' : 'off');
+      // Текст остается неизменным - надписи всегда "Debug" и "Overlay"
     }
 
     // Переключение overlay
@@ -201,14 +191,91 @@
       }
     }
 
-    // Создание прозрачного квадрата с зеленой границей (исправленная версия)
+    // Поиск canvas контейнера (универсальный метод)
+    findCanvasContainer() {
+      this.log("Поиск canvas контейнера...");
+      
+      // Способ 1: Ищем по наличию canvas с data-engine и проверяем родителя
+      const canvasElements = document.querySelectorAll('canvas[data-engine="three.js r164"]');
+      for (const canvas of canvasElements) {
+        let parent = canvas.parentElement;
+        while (parent) {
+          const style = window.getComputedStyle(parent);
+          if (style.position === 'relative' || style.position === 'absolute') {
+            // Проверяем, что этот div содержит canvas и имеет подходящие размеры
+            const rect = parent.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              this.log(`Найден canvas контейнер (способ 1): ${parent.className}, размер: ${rect.width}x${rect.height}`);
+              return parent;
+            }
+          }
+          parent = parent.parentElement;
+          // Не поднимаемся слишком высоко
+          if (parent === document.body) break;
+        }
+      }
+      
+      // Способ 2: Ищем div с position relative/absolute, внутри которого есть canvas
+      const allDivs = document.querySelectorAll('div');
+      for (const div of allDivs) {
+        const style = window.getComputedStyle(div);
+        if ((style.position === 'relative' || style.position === 'absolute')) {
+          const canvas = div.querySelector('canvas[data-engine="three.js r164"]');
+          if (canvas) {
+            const rect = div.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              this.log(`Найден canvas контейнер (способ 2): ${div.className}, размер: ${rect.width}x${rect.height}`);
+              return div;
+            }
+          }
+        }
+      }
+      
+      // Способ 3: Ищем по классам, содержащим jss и имеющим внутри canvas
+      const jssContainers = document.querySelectorAll('[class*="jss"]');
+      for (const container of jssContainers) {
+        const canvas = container.querySelector('canvas[data-engine="three.js r164"]');
+        if (canvas) {
+          const rect = container.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            this.log(`Найден canvas контейнер (способ 3): ${container.className}, размер: ${rect.width}x${rect.height}`);
+            return container;
+          }
+        }
+      }
+      
+      this.log("Canvas контейнер не найден ни одним из способов");
+      return null;
+    }
+
+    // Создание прозрачного квадрата с зеленой границей (улучшенная версия)
     createOverlay() {
       this.log("Создание overlay элемента");
 
-      // Ищем canvas контейнер
-      const canvasContainer = document.querySelector('[class*="jss127"]');
+      // Находим canvas контейнер
+      const canvasContainer = this.findCanvasContainer();
+      
       if (!canvasContainer) {
         this.error("Не найден canvas контейнер");
+        
+        // В debug режиме выводим все потенциальные кандидаты
+        if (this.debugMode) {
+          this.log("Поиск всех элементов с canvas:");
+          const allCanvas = document.querySelectorAll('canvas');
+          allCanvas.forEach((canvas, idx) => {
+            this.log(`Canvas ${idx}:`, canvas, canvas.parentElement);
+          });
+          
+          this.log("Поиск всех div с position relative:");
+          const allDivs = document.querySelectorAll('div');
+          allDivs.forEach((div, idx) => {
+            const style = window.getComputedStyle(div);
+            if (style.position === 'relative') {
+              this.log(`Div ${idx} с position relative:`, div.className, div);
+            }
+          });
+        }
+        
         this.overlayActive = false;
         this.updateSwitchState(this.overlaySwitch, false);
         return;
@@ -220,13 +287,15 @@
       // Получаем высоту canvas контейнера
       const rect = canvasContainer.getBoundingClientRect();
       const containerHeight = rect.height;
-
-      this.log(`Высота canvas контейнера: ${containerHeight}px`);
+      const containerWidth = rect.width;
+      
+      this.log(`Размеры canvas контейнера: ${containerWidth}x${containerHeight}px`);
+      this.log(`Квадрат будет размером: ${containerHeight}x${containerHeight}px`);
 
       // Создаем overlay элемент
-      this.overlayElement = document.createElement("div");
-      this.overlayElement.className = "zolak-canvas-overlay";
-
+      this.overlayElement = document.createElement('div');
+      this.overlayElement.className = 'zolak-canvas-overlay';
+      
       // Устанавливаем стили для overlay - квадрат по высоте контейнера
       this.overlayElement.style.cssText = `
         position: absolute;
@@ -245,37 +314,51 @@
       `;
 
       // Делаем canvas container относительным для позиционирования (если еще не)
-      if (window.getComputedStyle(canvasContainer).position === "static") {
-        canvasContainer.style.position = "relative";
+      const currentPosition = window.getComputedStyle(canvasContainer).position;
+      if (currentPosition === 'static') {
+        canvasContainer.style.position = 'relative';
+        this.log("Установлен position: relative для canvas контейнера");
+      } else {
+        this.log(`Canvas контейнер уже имеет position: ${currentPosition}`);
       }
 
+      // Сохраняем ссылку на контейнер для обработчика ресайза
+      this.canvasContainerRef = canvasContainer;
+      
       // Добавляем overlay в canvas контейнер
       canvasContainer.appendChild(this.overlayElement);
-
-      this.log(`Overlay создан: ${containerHeight}×${containerHeight}px`);
+      
+      this.log(`Overlay создан: ${containerHeight}×${containerHeight}px, центрирован горизонтально`);
 
       // Добавляем обработчик изменения размера окна
-      window.addEventListener("resize", this.handleOverlayResize.bind(this));
+      window.addEventListener('resize', this.handleOverlayResize.bind(this));
     }
 
-    // Обработчик изменения размера окна
+    // Обработчик изменения размера окна (обновленная версия)
     handleOverlayResize() {
       if (this.overlayActive && this.overlayElement) {
-        const canvasContainer = document.querySelector('[class*="jss127"]');
-        if (
-          canvasContainer &&
-          this.overlayElement.parentNode === canvasContainer
-        ) {
-          const newHeight = canvasContainer.getBoundingClientRect().height;
-
-          // Обновляем размер квадрата
-          this.overlayElement.style.width = `${newHeight}px`;
-          this.overlayElement.style.height = `${newHeight}px`;
-
-          this.log(
-            `Overlay обновлен: новый размер ${newHeight}×${newHeight}px`,
-          );
+        // Проверяем, что контейнер все еще существует
+        let container = this.canvasContainerRef;
+        
+        // Если ссылка пропала или контейнер удален из DOM, ищем заново
+        if (!container || !document.body.contains(container)) {
+          this.log("Ссылка на canvas контейнер потеряна, ищем заново...");
+          container = this.findCanvasContainer();
+          if (container) {
+            this.canvasContainerRef = container;
+          } else {
+            this.log("Не удалось найти canvas контейнер при ресайзе");
+            return;
+          }
         }
+        
+        const newHeight = container.getBoundingClientRect().height;
+        
+        // Обновляем размер квадрата
+        this.overlayElement.style.width = `${newHeight}px`;
+        this.overlayElement.style.height = `${newHeight}px`;
+        
+        this.log(`Overlay обновлен: новый размер ${newHeight}×${newHeight}px`);
       }
     }
 
@@ -285,15 +368,16 @@
         this.overlayElement.remove();
         this.overlayElement = null;
       }
-
-      window.removeEventListener("resize", this.handleOverlayResize.bind(this));
+      
+      this.canvasContainerRef = null;
+      window.removeEventListener('resize', this.handleOverlayResize.bind(this));
       this.log("Overlay удален");
     }
 
     // Наблюдение за диалогом рендера
     observeRenderDialog() {
       this.log("Наблюдение за диалогом рендера...");
-
+      
       this.renderObserver = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (mutation.addedNodes.length > 0) {
@@ -307,7 +391,7 @@
 
       this.renderObserver.observe(document.body, {
         childList: true,
-        subtree: true,
+        subtree: true
       });
 
       // Проверяем сразу на случай, если диалог уже есть
@@ -317,9 +401,7 @@
     // Проверка появления диалога
     checkForRenderDialog() {
       // Ищем диалог по части класса
-      const dialog = document.querySelector(
-        '[class*="StudioRenderDialog-dialogContainer"]',
-      );
+      const dialog = document.querySelector('[class*="StudioRenderDialog-dialogContainer"]');
       if (dialog && !this.isRendering) {
         this.log("секундомер: обнаружен диалог рендера");
         this.startStopwatch(dialog);
@@ -328,9 +410,7 @@
 
     // Проверка исчезновения диалога
     checkForRenderDialogRemoved() {
-      const dialog = document.querySelector(
-        '[class*="StudioRenderDialog-dialogContainer"]',
-      );
+      const dialog = document.querySelector('[class*="StudioRenderDialog-dialogContainer"]');
       if (!dialog && this.isRendering) {
         this.log("секундомер: диалог рендера закрыт");
         this.stopStopwatch();
@@ -342,44 +422,40 @@
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
-
-      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+      
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
 
     // Создание элемента секундомера
     createStopwatchElement() {
-      const stopwatchDiv = document.createElement("div");
-      stopwatchDiv.className = "zolak-stopwatch";
-
-      const timeSpan = document.createElement("span");
-      timeSpan.className = "zolak-stopwatch-time";
-      timeSpan.textContent = "00:00:00";
-
+      const stopwatchDiv = document.createElement('div');
+      stopwatchDiv.className = 'zolak-stopwatch';
+      
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'zolak-stopwatch-time';
+      timeSpan.textContent = '00:00:00';
+      
       stopwatchDiv.appendChild(timeSpan);
-
+      
       return { container: stopwatchDiv, timeSpan };
     }
 
     // Поиск места для вставки секундомера
     findInsertPosition(dialog) {
       this.log("секундомер: поиск места для вставки");
-
-      const progressContainer = dialog.querySelector(
-        '[class*="StudioRenderDialog-progressContainer"]',
-      );
+      
+      const progressContainer = dialog.querySelector('[class*="StudioRenderDialog-progressContainer"]');
       if (!progressContainer) {
         this.log("секундомер: progressContainer не найден");
         return null;
       }
-
-      const progressText = progressContainer.querySelector(
-        '[class*="StudioRenderDialog-progressText"]',
-      );
+      
+      const progressText = progressContainer.querySelector('[class*="StudioRenderDialog-progressText"]');
       if (!progressText) {
         this.log("секундомер: progressText не найден");
         return null;
       }
-
+      
       this.log("секундомер: найдено место для вставки после progressText");
       return progressText;
     }
@@ -390,28 +466,26 @@
         this.log("секундомер: уже запущен");
         return;
       }
-
+      
       this.log("секундомер: запуск...");
       this.isRendering = true;
       this.stopwatchStartTime = Date.now();
-
+      
       if (this.stopwatchContainer) {
         this.stopwatchContainer.remove();
       }
-
+      
       const { container, timeSpan } = this.createStopwatchElement();
       this.stopwatchContainer = container;
       this.stopwatchElement = timeSpan;
-
+      
       const insertAfter = this.findInsertPosition(dialog);
-
+      
       if (insertAfter) {
         insertAfter.parentNode.insertBefore(container, insertAfter.nextSibling);
         this.log("секундомер: добавлен после progressText");
       } else {
-        const progressContainer = dialog.querySelector(
-          '[class*="StudioRenderDialog-progressContainer"]',
-        );
+        const progressContainer = dialog.querySelector('[class*="StudioRenderDialog-progressContainer"]');
         if (progressContainer) {
           progressContainer.appendChild(container);
           this.log("секундомер: добавлен в конец progressContainer");
@@ -420,14 +494,14 @@
           this.log("секундомер: добавлен в конец диалога");
         }
       }
-
+      
       this.stopwatchInterval = setInterval(() => {
         if (this.stopwatchStartTime) {
           const elapsedSeconds = (Date.now() - this.stopwatchStartTime) / 1000;
           this.stopwatchElement.textContent = this.formatTime(elapsedSeconds);
         }
       }, 100);
-
+      
       this.log("секундомер: запущен успешно");
     }
 
@@ -437,27 +511,27 @@
         this.log("секундомер: не был запущен");
         return;
       }
-
+      
       this.log("секундомер: остановка...");
-
+      
       if (this.stopwatchInterval) {
         clearInterval(this.stopwatchInterval);
         this.stopwatchInterval = null;
       }
-
+      
       if (this.stopwatchStartTime) {
         const elapsedSeconds = (Date.now() - this.stopwatchStartTime) / 1000;
         const formattedTime = this.formatTime(elapsedSeconds);
         console.log(`[Zolak Gallery] Время рендера: ${formattedTime}`);
         this.lastRenderText = formattedTime;
       }
-
+      
       if (this.stopwatchContainer) {
         this.stopwatchContainer.remove();
         this.stopwatchContainer = null;
         this.stopwatchElement = null;
       }
-
+      
       this.isRendering = false;
       this.stopwatchStartTime = null;
       this.log("секундомер: остановлен");
@@ -602,35 +676,35 @@
         Gallery
       `;
 
-      this.button.setAttribute("tabindex", "-1");
-
-      this.button.addEventListener("mousedown", (e) => e.preventDefault());
-      this.button.addEventListener("mouseup", (e) => e.preventDefault());
-
+      this.button.setAttribute('tabindex', '-1');
+      
+      this.button.addEventListener('mousedown', (e) => e.preventDefault());
+      this.button.addEventListener('mouseup', (e) => e.preventDefault());
+      
       let clickTimeout = null;
-
+      
       this.button.addEventListener("click", (event) => {
         event.preventDefault();
         event.stopPropagation();
-
+        
         if (event.detail === 0) {
           this.log("Клик с клавиатуры предотвращен");
           return;
         }
-
+        
         if (clickTimeout) return;
         clickTimeout = setTimeout(() => {
           this.toggleGallery();
           clickTimeout = null;
         }, 100);
       });
-
+      
       this.button.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           event.stopPropagation();
           this.log("Нажатие Enter предотвращено");
-
+          
           if (clickTimeout) return;
           clickTimeout = setTimeout(() => {
             this.toggleGallery();
@@ -638,7 +712,7 @@
           }, 100);
         }
       });
-
+      
       this.button.addEventListener("focus", (event) => {
         event.preventDefault();
         this.button.blur();
