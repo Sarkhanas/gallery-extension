@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Zolak Media Gallery",
-  "version": "1.7.4",
-  "description": "Преобразует горизонтальный скролл медиа-файлов в вертикальную галерею 5x5 + секундомер для Studio",
+  "version": "1.8.0",
+  "description": "Преобразует горизонтальный скролл медиа-файлов в вертикальную галерею 5x5 + секундомер для Studio + Overlay режим",
   "update_url": "https://raw.githubusercontent.com/Sarkhanas/gallery-extension/main/updates.xml",
   "permissions": [
     "activeTab"

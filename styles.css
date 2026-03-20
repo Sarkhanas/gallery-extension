@@ -1,4 +1,122 @@
-/* styles.css - ПОЛНАЯ ВЕРСИЯ С СЕКУНДОМЕРОМ */
+/* styles.css - ПОЛНАЯ ВЕРСИЯ С СЕКУНДОМЕРОМ, OVERLAY И SWITCH-КНОПКАМИ */
+
+/* ========== СТИЛИ ДЛЯ SWITCH-КНОПОК (DEBUG И OVERLAY) ========== */
+.zolak-overlay-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 20px;
+}
+
+.zolak-switch-button {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #334D6E;
+  transition: all 0.2s ease;
+  outline: none;
+  position: relative;
+}
+
+.zolak-switch-button:focus-visible {
+  outline: 2px solid #00C98F;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.zolak-switch-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #334D6E;
+  transition: color 0.2s ease;
+  min-width: 50px;
+  text-align: left;
+}
+
+.zolak-switch-button.active .zolak-switch-label {
+  color: #00C98F;
+}
+
+.zolak-switch-slider {
+  width: 44px;
+  height: 24px;
+  background: #E2EAF3;
+  border-radius: 34px;
+  position: relative;
+  transition: background-color 0.2s ease;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.zolak-switch-button.active .zolak-switch-slider {
+  background: #00C98F;
+}
+
+.zolak-switch-knob {
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.zolak-switch-button.active .zolak-switch-knob {
+  transform: translateX(20px);
+}
+
+/* Hover эффекты */
+.zolak-switch-button:hover .zolak-switch-slider {
+  background: #C3D0E1;
+}
+
+.zolak-switch-button.active:hover .zolak-switch-slider {
+  background: #00B37A;
+}
+
+.zolak-switch-button:hover .zolak-switch-label {
+  color: #00C98F;
+}
+
+/* ========== СТИЛИ ДЛЯ OVERLAY ========== */
+.zolak-canvas-overlay {
+  position: absolute !important;
+  top: 0 !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  border: 3px solid #00ff00 !important;
+  box-sizing: border-box !important;
+  pointer-events: none !important;
+  z-index: 9999 !important;
+  background: transparent !important;
+  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3) !important;
+  animation: zolak-overlay-pulse 2s infinite ease-in-out !important;
+}
+
+@keyframes zolak-overlay-pulse {
+  0% {
+    border-color: #00ff00;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 255, 0, 0.5);
+  }
+  50% {
+    border-color: #33ff33;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 20px rgba(51, 255, 51, 0.8);
+  }
+  100% {
+    border-color: #00ff00;
+    box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3), 0 0 10px rgba(0, 255, 0, 0.5);
+  }
+}
+
+/* ========== СТИЛИ ДЛЯ КНОПКИ GALLERY ========== */
 .zolak-gallery-button {
   background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
   border: none;
@@ -29,6 +147,7 @@
   box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
 }
 
+/* ========== СТИЛИ ДЛЯ МОДАЛЬНОГО ОКНА ГАЛЕРЕИ ========== */
 .zolak-gallery-modal {
   position: fixed;
   top: 50%;
@@ -91,7 +210,7 @@
   gap: 12px;
 }
 
-/* Кнопка Debug */
+/* Кнопка Debug в галерее */
 .zolak-debug-button {
   background: rgba(255, 255, 255, 0.2);
   border: 1px solid rgba(255, 255, 255, 0.3);

@@ -1,4 +1,4 @@
-// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ И ИСПРАВЛЕНИЕМ ENTER
+// content.js - ФИНАЛЬНАЯ ВЕРСИЯ С DEBUG РЕЖИМОМ, ИСПРАВЛЕНИЕМ ENTER И OVERLAY (КВАДРАТ ПО ВЫСОТЕ)
 (function () {
   "use strict";
 
@@ -13,15 +13,22 @@
       this.currentHighlightedElement = null;
       this.isSearching = false;
       this.debugMode = false; // По умолчанию выключен
-      
+
       // Свойства для секундомера
       this.stopwatchInterval = null;
       this.stopwatchStartTime = null;
       this.stopwatchElement = null;
       this.stopwatchContainer = null;
       this.isRendering = false;
-      this.lastRenderText = '';
+      this.lastRenderText = "";
       this.renderObserver = null;
+
+      // Свойства для overlay функционала
+      this.overlayActive = false;
+      this.overlayElement = null;
+      this.overlayControlsContainer = null;
+      this.debugSwitch = null;
+      this.overlaySwitch = null;
     }
 
     // Универсальный метод для логирования
@@ -43,7 +50,7 @@
       try {
         const hostname = window.location.hostname;
         const fullUrl = window.location.href;
-        
+
         const isValidDomain =
           hostname.includes("dev.admin.zolak.tech") ||
           hostname.includes("eu.admin.zolak.tech") ||
@@ -59,10 +66,22 @@
         }
 
         // Запускаем наблюдение за диалогом рендера только для studio и scenes
-        if (hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/studios/") || 
-            hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/") ) {
+        if (
+          (hostname.includes("studio.zolak.tech") &&
+            fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) ||
+          (hostname.includes("studio.zolak.tech") &&
+            fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/"))
+        ) {
           this.log("Запуск секундомера для studios");
           this.observeRenderDialog();
+        }
+
+        // Добавляем контролы для studio страниц
+        if (fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) {
+          this.log(
+            "Обнаружена страница studio, добавляем контролы Overlay и Debug",
+          );
+          this.createOverlayControls();
         }
 
         this.findOriginalContainer();
@@ -73,10 +92,208 @@
       }
     }
 
+    // Создание контролов Overlay и Debug
+    createOverlayControls() {
+      this.log("Создание контролов Overlay и Debug");
+
+      // Ждем появления элемента сортировки
+      const checkInterval = setInterval(() => {
+        const sortElement = document.querySelector('[class*="jss18"]');
+        if (sortElement) {
+          clearInterval(checkInterval);
+          this.injectControls(sortElement);
+        }
+      }, 500);
+
+      // Также наблюдаем за изменениями в DOM
+      const observer = new MutationObserver(() => {
+        if (!this.overlayControlsContainer) {
+          const sortElement = document.querySelector('[class*="jss18"]');
+          if (sortElement) {
+            this.injectControls(sortElement);
+          }
+        }
+      });
+
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+      });
+    }
+
+    // Внедрение контролов
+    injectControls(sortElement) {
+      if (this.overlayControlsContainer) return;
+
+      this.log("Найден элемент сортировки, внедряем контролы");
+
+      // Создаем контейнер для контролов
+      this.overlayControlsContainer = document.createElement("div");
+      this.overlayControlsContainer.className = "zolak-overlay-controls";
+      this.overlayControlsContainer.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-right: 16px;
+      `;
+
+      // Создаем Debug switch
+      this.debugSwitch = this.createSwitchButton("Debug", this.debugMode);
+      this.debugSwitch.addEventListener("click", () => {
+        this.toggleDebug();
+        this.updateSwitchState(this.debugSwitch, this.debugMode);
+      });
+
+      // Создаем Overlay switch
+      this.overlaySwitch = this.createSwitchButton("Overlay", false);
+      this.overlaySwitch.addEventListener("click", () => {
+        this.toggleOverlay();
+        this.updateSwitchState(this.overlaySwitch, this.overlayActive);
+      });
+
+      this.overlayControlsContainer.appendChild(this.debugSwitch);
+      this.overlayControlsContainer.appendChild(this.overlaySwitch);
+
+      // Вставляем перед элементом сортировки
+      sortElement.parentNode.insertBefore(
+        this.overlayControlsContainer,
+        sortElement,
+      );
+
+      this.log("Контролы успешно внедрены");
+    }
+
+    // Создание стилизованной switch-кнопки
+    createSwitchButton(text, isActive) {
+      const button = document.createElement("button");
+      button.className = `zolak-switch-button ${isActive ? "active" : ""}`;
+      button.setAttribute("data-state", isActive ? "on" : "off");
+      button.innerHTML = `
+    <span class="zolak-switch-label">${text}</span>
+    <span class="zolak-switch-slider">
+      <span class="zolak-switch-knob"></span>
+    </span>
+  `;
+
+      return button;
+    }
+
+    // Обновление состояния switch-кнопки (текст больше не меняется)
+    updateSwitchState(button, isActive) {
+      if (!button) return;
+
+      button.classList.toggle("active", isActive);
+      button.setAttribute("data-state", isActive ? "on" : "off");
+
+      // Текст больше не меняется - надпись всегда остается "Debug" и "Overlay"
+      // Можно оставить эту функцию пустой или просто обновлять классы
+    }
+
+    // Переключение overlay
+    toggleOverlay() {
+      this.overlayActive = !this.overlayActive;
+      this.log(`Overlay режим: ${this.overlayActive ? "включен" : "выключен"}`);
+
+      if (this.overlayActive) {
+        this.createOverlay();
+      } else {
+        this.removeOverlay();
+      }
+    }
+
+    // Создание прозрачного квадрата с зеленой границей (исправленная версия)
+    createOverlay() {
+      this.log("Создание overlay элемента");
+
+      // Ищем canvas контейнер
+      const canvasContainer = document.querySelector('[class*="jss127"]');
+      if (!canvasContainer) {
+        this.error("Не найден canvas контейнер");
+        this.overlayActive = false;
+        this.updateSwitchState(this.overlaySwitch, false);
+        return;
+      }
+
+      // Удаляем старый overlay если есть
+      this.removeOverlay();
+
+      // Получаем высоту canvas контейнера
+      const rect = canvasContainer.getBoundingClientRect();
+      const containerHeight = rect.height;
+
+      this.log(`Высота canvas контейнера: ${containerHeight}px`);
+
+      // Создаем overlay элемент
+      this.overlayElement = document.createElement("div");
+      this.overlayElement.className = "zolak-canvas-overlay";
+
+      // Устанавливаем стили для overlay - квадрат по высоте контейнера
+      this.overlayElement.style.cssText = `
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: ${containerHeight}px;
+        height: ${containerHeight}px;
+        border: 3px solid #00ff00;
+        box-sizing: border-box;
+        pointer-events: none;
+        z-index: 1000;
+        background: transparent;
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.3);
+        transition: all 0.2s ease;
+      `;
+
+      // Делаем canvas container относительным для позиционирования (если еще не)
+      if (window.getComputedStyle(canvasContainer).position === "static") {
+        canvasContainer.style.position = "relative";
+      }
+
+      // Добавляем overlay в canvas контейнер
+      canvasContainer.appendChild(this.overlayElement);
+
+      this.log(`Overlay создан: ${containerHeight}×${containerHeight}px`);
+
+      // Добавляем обработчик изменения размера окна
+      window.addEventListener("resize", this.handleOverlayResize.bind(this));
+    }
+
+    // Обработчик изменения размера окна
+    handleOverlayResize() {
+      if (this.overlayActive && this.overlayElement) {
+        const canvasContainer = document.querySelector('[class*="jss127"]');
+        if (
+          canvasContainer &&
+          this.overlayElement.parentNode === canvasContainer
+        ) {
+          const newHeight = canvasContainer.getBoundingClientRect().height;
+
+          // Обновляем размер квадрата
+          this.overlayElement.style.width = `${newHeight}px`;
+          this.overlayElement.style.height = `${newHeight}px`;
+
+          this.log(
+            `Overlay обновлен: новый размер ${newHeight}×${newHeight}px`,
+          );
+        }
+      }
+    }
+
+    // Удаление overlay
+    removeOverlay() {
+      if (this.overlayElement) {
+        this.overlayElement.remove();
+        this.overlayElement = null;
+      }
+
+      window.removeEventListener("resize", this.handleOverlayResize.bind(this));
+      this.log("Overlay удален");
+    }
+
     // Наблюдение за диалогом рендера
     observeRenderDialog() {
       this.log("Наблюдение за диалогом рендера...");
-      
+
       this.renderObserver = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
           if (mutation.addedNodes.length > 0) {
@@ -90,7 +307,7 @@
 
       this.renderObserver.observe(document.body, {
         childList: true,
-        subtree: true
+        subtree: true,
       });
 
       // Проверяем сразу на случай, если диалог уже есть
@@ -100,7 +317,9 @@
     // Проверка появления диалога
     checkForRenderDialog() {
       // Ищем диалог по части класса
-      const dialog = document.querySelector('[class*="StudioRenderDialog-dialogContainer"]');
+      const dialog = document.querySelector(
+        '[class*="StudioRenderDialog-dialogContainer"]',
+      );
       if (dialog && !this.isRendering) {
         this.log("секундомер: обнаружен диалог рендера");
         this.startStopwatch(dialog);
@@ -109,54 +328,58 @@
 
     // Проверка исчезновения диалога
     checkForRenderDialogRemoved() {
-      const dialog = document.querySelector('[class*="StudioRenderDialog-dialogContainer"]');
+      const dialog = document.querySelector(
+        '[class*="StudioRenderDialog-dialogContainer"]',
+      );
       if (!dialog && this.isRendering) {
         this.log("секундомер: диалог рендера закрыт");
         this.stopStopwatch();
       }
     }
 
-    // Форматирование времени (без ограничения часов)
+    // Форматирование времени
     formatTime(seconds) {
       const hours = Math.floor(seconds / 3600);
       const minutes = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
-      
-      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+
+      return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
     }
 
     // Создание элемента секундомера
     createStopwatchElement() {
-      const stopwatchDiv = document.createElement('div');
-      stopwatchDiv.className = 'zolak-stopwatch';
-      
-      const timeSpan = document.createElement('span');
-      timeSpan.className = 'zolak-stopwatch-time';
-      timeSpan.textContent = '00:00:00';
-      
+      const stopwatchDiv = document.createElement("div");
+      stopwatchDiv.className = "zolak-stopwatch";
+
+      const timeSpan = document.createElement("span");
+      timeSpan.className = "zolak-stopwatch-time";
+      timeSpan.textContent = "00:00:00";
+
       stopwatchDiv.appendChild(timeSpan);
-      
+
       return { container: stopwatchDiv, timeSpan };
     }
 
     // Поиск места для вставки секундомера
     findInsertPosition(dialog) {
       this.log("секундомер: поиск места для вставки");
-      
-      // Ищем progressContainer
-      const progressContainer = dialog.querySelector('[class*="StudioRenderDialog-progressContainer"]');
+
+      const progressContainer = dialog.querySelector(
+        '[class*="StudioRenderDialog-progressContainer"]',
+      );
       if (!progressContainer) {
         this.log("секундомер: progressContainer не найден");
         return null;
       }
-      
-      // Ищем p с progressText внутри progressContainer
-      const progressText = progressContainer.querySelector('[class*="StudioRenderDialog-progressText"]');
+
+      const progressText = progressContainer.querySelector(
+        '[class*="StudioRenderDialog-progressText"]',
+      );
       if (!progressText) {
         this.log("секундомер: progressText не найден");
         return null;
       }
-      
+
       this.log("секундомер: найдено место для вставки после progressText");
       return progressText;
     }
@@ -167,49 +390,44 @@
         this.log("секундомер: уже запущен");
         return;
       }
-      
+
       this.log("секундомер: запуск...");
       this.isRendering = true;
       this.stopwatchStartTime = Date.now();
-      
-      // Удаляем старый секундомер, если есть
+
       if (this.stopwatchContainer) {
         this.stopwatchContainer.remove();
       }
-      
-      // Создаем новый секундомер
+
       const { container, timeSpan } = this.createStopwatchElement();
       this.stopwatchContainer = container;
       this.stopwatchElement = timeSpan;
-      
-      // Находим место для вставки
+
       const insertAfter = this.findInsertPosition(dialog);
-      
+
       if (insertAfter) {
-        // Вставляем после progressText
         insertAfter.parentNode.insertBefore(container, insertAfter.nextSibling);
         this.log("секундомер: добавлен после progressText");
       } else {
-        // Если не нашли нужное место, добавляем в конец progressContainer
-        const progressContainer = dialog.querySelector('[class*="StudioRenderDialog-progressContainer"]');
+        const progressContainer = dialog.querySelector(
+          '[class*="StudioRenderDialog-progressContainer"]',
+        );
         if (progressContainer) {
           progressContainer.appendChild(container);
           this.log("секундомер: добавлен в конец progressContainer");
         } else {
-          // В самом крайнем случае - в конец диалога
           dialog.appendChild(container);
           this.log("секундомер: добавлен в конец диалога");
         }
       }
-      
-      // Запускаем обновление времени
+
       this.stopwatchInterval = setInterval(() => {
         if (this.stopwatchStartTime) {
           const elapsedSeconds = (Date.now() - this.stopwatchStartTime) / 1000;
           this.stopwatchElement.textContent = this.formatTime(elapsedSeconds);
         }
       }, 100);
-      
+
       this.log("секундомер: запущен успешно");
     }
 
@@ -219,31 +437,27 @@
         this.log("секундомер: не был запущен");
         return;
       }
-      
+
       this.log("секундомер: остановка...");
-      
+
       if (this.stopwatchInterval) {
         clearInterval(this.stopwatchInterval);
         this.stopwatchInterval = null;
       }
-      
+
       if (this.stopwatchStartTime) {
         const elapsedSeconds = (Date.now() - this.stopwatchStartTime) / 1000;
         const formattedTime = this.formatTime(elapsedSeconds);
-        // Прямой console.log для времени рендера (всегда показываем)
         console.log(`[Zolak Gallery] Время рендера: ${formattedTime}`);
-        
-        // Сохраняем последнее время для истории
         this.lastRenderText = formattedTime;
       }
-      
-      // Удаляем контейнер
+
       if (this.stopwatchContainer) {
         this.stopwatchContainer.remove();
         this.stopwatchContainer = null;
         this.stopwatchElement = null;
       }
-      
+
       this.isRendering = false;
       this.stopwatchStartTime = null;
       this.log("секундомер: остановлен");
@@ -251,12 +465,10 @@
 
     toggleDebug() {
       this.debugMode = !this.debugMode;
-      // Это сообщение показываем всегда, чтобы пользователь знал состояние
       console.log(
         `[Zolak Gallery] Режим отладки: ${this.debugMode ? "включен" : "выключен"}`,
       );
 
-      // Обновляем текст на кнопке
       const debugButton = this.galleryContainer?.querySelector(
         ".zolak-debug-button",
       );
@@ -278,7 +490,6 @@
         if (this.debugMode) {
           this.log("Всего div на странице:", allDivs.length);
 
-          // В debug режиме показываем все потенциальные контейнеры
           Array.from(allDivs).forEach((div) => {
             const items = div.querySelectorAll(':scope > [draggable="true"]');
             const hasImage = div.querySelector('img[alt="File"]');
@@ -391,42 +602,35 @@
         Gallery
       `;
 
-      // Отключаем возможность фокуса на кнопке
-      this.button.setAttribute('tabindex', '-1');
-      
-      // Предотвращаем стандартное поведение для всех типов событий
-      this.button.addEventListener('mousedown', (e) => e.preventDefault());
-      this.button.addEventListener('mouseup', (e) => e.preventDefault());
-      
+      this.button.setAttribute("tabindex", "-1");
+
+      this.button.addEventListener("mousedown", (e) => e.preventDefault());
+      this.button.addEventListener("mouseup", (e) => e.preventDefault());
+
       let clickTimeout = null;
-      
-      // Основной обработчик клика с проверкой на enter
+
       this.button.addEventListener("click", (event) => {
-        // Предотвращаем стандартное поведение в любом случае
         event.preventDefault();
         event.stopPropagation();
-        
-        // Проверяем, не вызвано ли событие с клавиатуры
-        // event.detail === 0 означает, что событие вызвано программно или с клавиатуры
+
         if (event.detail === 0) {
           this.log("Клик с клавиатуры предотвращен");
           return;
         }
-        
+
         if (clickTimeout) return;
         clickTimeout = setTimeout(() => {
           this.toggleGallery();
           clickTimeout = null;
         }, 100);
       });
-      
-      // Отдельный обработчик для клавиши Enter
+
       this.button.addEventListener("keydown", (event) => {
         if (event.key === "Enter" || event.key === " ") {
           event.preventDefault();
           event.stopPropagation();
           this.log("Нажатие Enter предотвращено");
-          
+
           if (clickTimeout) return;
           clickTimeout = setTimeout(() => {
             this.toggleGallery();
@@ -434,11 +638,10 @@
           }, 100);
         }
       });
-      
-      // Защита от фокуса при табуляции
+
       this.button.addEventListener("focus", (event) => {
         event.preventDefault();
-        this.button.blur(); // Принудительно убираем фокус
+        this.button.blur();
       });
 
       parent.insertBefore(this.button, this.originalContainer);
@@ -467,7 +670,6 @@
       const controlsContainer = document.createElement("div");
       controlsContainer.className = "zolak-gallery-controls";
 
-      // Создаем Debug Switch
       const debugButton = document.createElement("button");
       debugButton.className = "zolak-debug-button";
       debugButton.textContent = `Debug ${this.debugMode ? "ON" : "OFF"}`;
