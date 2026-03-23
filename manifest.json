@@ -15,7 +15,9 @@
         "https://eu.admin.zolak.tech/products",
         "https://eu.admin.zolak.tech/materials",
         "https://dev.studio.zolak.tech/studios/*",
-        "https://dev.studio.zolak.tech/scenes/"
+        "https://dev.studio.zolak.tech/scenes/*",
+        "https://eu.studio.zolak.tech/studios/*",
+        "https://eu.studio.zolak.tech/scenes/*"
       ],
       "js": ["content.js"],
       "css": ["styles.css"],

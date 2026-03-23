@@ -53,11 +53,11 @@
         const fullUrl = window.location.href;
         
         const isValidDomain =
-          hostname.includes("dev.admin.zolak.tech") ||
-          hostname.includes("eu.admin.zolak.tech") ||
-          hostname.includes("admin.zolak.tech") ||
-          hostname.includes("dev.studio.zolak.tech");
-
+        hostname.includes("dev.admin.zolak.tech") ||
+        hostname.includes("eu.admin.zolak.tech") ||
+        hostname.includes("admin.zolak.tech") ||
+        hostname.includes("dev.studio.zolak.tech") ||
+        hostname.includes("eu.studio.zolak.tech");
         if (!isValidDomain) {
           this.log(
             "Не тот домен, расширение не должно было запуститься:",
@@ -67,14 +67,17 @@
         }
 
         // Запускаем наблюдение за диалогом рендера только для studio и scenes
-        if (hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/studios/") || 
-            hostname.includes("studio.zolak.tech") && fullUrl.startsWith("https://dev.studio.zolak.tech/scenes/") ) {
+        if ((hostname.includes("dev.studio.zolak.tech") ||
+        hostname.includes("eu.studio.zolak.tech")) &&
+        (fullUrl.includes("/studios/") ||
+        fullUrl.includes("/scenes/"))) {
           this.log("Запуск секундомера для studios");
           this.observeRenderDialog();
         }
-
         // Добавляем контролы для studio страниц
-        if (fullUrl.startsWith("https://dev.studio.zolak.tech/studios/")) {
+        if (fullUrl.includes("/studios/") &&
+        (hostname.includes("dev.studio.zolak.tech") ||
+        hostname.includes("eu.studio.zolak.tech"))) {
           this.log("Обнаружена страница studio, добавляем контролы Overlay и Debug");
           this.createOverlayControls();
         }
@@ -1043,4 +1046,6 @@
   } else {
     new GalleryTransformer().init();
   }
+
+  console.log("[Zolak Gallery] content.js загружен и выполняется");
 })();
