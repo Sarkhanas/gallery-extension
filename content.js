@@ -290,10 +290,42 @@
       // Получаем высоту canvas контейнера
       const rect = canvasContainer.getBoundingClientRect();
       const containerHeight = rect.height;
-      const containerWidth = rect.width;
+      let containerWidth = rect.width;
       
       this.log(`Размеры canvas контейнера: ${containerWidth}x${containerHeight}px`);
-      this.log(`Квадрат будет размером: ${containerHeight}x${containerHeight}px`);
+      
+      //Начало блока для определения размеров из выпадающего списка (если он есть)
+      if (document.querySelectorAll(
+        '.MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd'
+      )) {
+        const inputs = document.querySelectorAll(
+          '.MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd'
+        );
+        const values = Array.from(inputs).map(input => input.value);
+
+        if (values.includes('2048 × 2048 px (Square)')){
+          this.log('Контейнер с размерами 2048 × 2048 px (Square) найден');
+          containerWidth = containerHeight;
+
+        } else if (values.includes('2400 × 1600 px (Landscape)')) {
+          this.log('Контейнер с размерами 2400 × 1600 px (Landscape) найден');
+          containerWidth = containerWidth * 0.9375;
+
+        } else if (values.includes('2560 × 1440 px (Landscape)')) {
+          this.log('Контейнер с размерами 2560 × 1440 px (Landscape) найден');
+
+        } else if (values.includes('2000 × 2500 px (Portrait)')) {
+          this.log('Контейнер с размерами 2000 × 2500 px (Portrait) найден');
+          containerWidth = containerHeight * 0.9765625;
+        }
+
+      } else {
+        this.log('Контейнер с размерами не найден, возможно, структура страницы изменилась');
+        containerWidth = containerHeight;
+      }
+      //Конец блока для определения размеров из выпадающего списка
+
+      this.log(`Квадрат будет размером: ${containerWidth}x${containerHeight}px`);
 
       // Создаем overlay элемент
       this.overlayElement = document.createElement('div');
@@ -305,7 +337,7 @@
         top: 0;
         left: 50%;
         transform: translateX(-50%);
-        width: ${containerHeight}px;
+        width: ${containerWidth}px;
         height: ${containerHeight}px;
         border: 3px solid #00ff00;
         box-sizing: border-box;
@@ -331,7 +363,7 @@
       // Добавляем overlay в canvas контейнер
       canvasContainer.appendChild(this.overlayElement);
       
-      this.log(`Overlay создан: ${containerHeight}×${containerHeight}px, центрирован горизонтально`);
+      this.log(`Overlay создан: ${containerWidth}×${containerHeight}px, центрирован горизонтально`);
 
       // Добавляем обработчик изменения размера окна
       window.addEventListener('resize', this.handleOverlayResize.bind(this));
@@ -356,12 +388,36 @@
         }
         
         const newHeight = container.getBoundingClientRect().height;
+        let newWidth = container.getBoundingClientRect().width;
+
+        const inputs = document.querySelectorAll(
+          '.MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd'
+        );
+        const values = Array.from(inputs).map(input => input.value);
         
+        //Начало блока для определения размеров из выпадающего списка
+        if (values.includes('2048 × 2048 px (Square)')){
+          this.log('Контейнер с размерами 2048 × 2048 px (Square) найден');
+          newWidth = newHeight;
+
+        } else if (values.includes('2400 × 1600 px (Landscape)')) {
+          this.log('Контейнер с размерами 2400 × 1600 px (Landscape) найден');
+          newWidth = newWidth * 0.9375;
+
+        } else if (values.includes('2560 × 1440 px (Landscape)')) {
+          this.log('Контейнер с размерами 2560 × 1440 px (Landscape) найден');
+
+        } else if (values.includes('2000 × 2500 px (Portrait)')) {
+          this.log('Контейнер с размерами 2000 × 2500 px (Portrait) найден');
+          newWidth = newHeight * 0.9765625;
+        }
+        //Конец блока для определения размеров из выпадающего списка
+
         // Обновляем размер квадрата
-        this.overlayElement.style.width = `${newHeight}px`;
+        this.overlayElement.style.width = `${newWidth}px`;
         this.overlayElement.style.height = `${newHeight}px`;
         
-        this.log(`Overlay обновлен: новый размер ${newHeight}×${newHeight}px`);
+        this.log(`Overlay обновлен: новый размер ${newWidth}×${newHeight}px`);
       }
     }
 
