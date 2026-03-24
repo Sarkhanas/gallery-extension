@@ -317,6 +317,9 @@
         } else if (values.includes('2000 × 2500 px (Portrait)')) {
           this.log('Контейнер с размерами 2000 × 2500 px (Portrait) найден');
           containerWidth = containerHeight * 0.9765625;
+        } else {
+          this.log('Размеры в контейнере не определены, используем высоту для ширины');
+          containerWidth = containerHeight;
         }
 
       } else {
@@ -394,12 +397,11 @@
           '.MuiInputBase-input.MuiOutlinedInput-input.MuiAutocomplete-input.MuiAutocomplete-inputFocused.MuiInputBase-inputAdornedEnd.MuiOutlinedInput-inputAdornedEnd'
         );
         const values = Array.from(inputs).map(input => input.value);
-        
+
         //Начало блока для определения размеров из выпадающего списка
         if (values.includes('2048 × 2048 px (Square)')){
           this.log('Контейнер с размерами 2048 × 2048 px (Square) найден');
           newWidth = newHeight;
-
         } else if (values.includes('2400 × 1600 px (Landscape)')) {
           this.log('Контейнер с размерами 2400 × 1600 px (Landscape) найден');
           newWidth = newWidth * 0.9375;
@@ -410,6 +412,9 @@
         } else if (values.includes('2000 × 2500 px (Portrait)')) {
           this.log('Контейнер с размерами 2000 × 2500 px (Portrait) найден');
           newWidth = newHeight * 0.9765625;
+        } else {
+          this.log('Размеры в контейнере не определены, используем высоту для ширины');
+          newWidth = newHeight;
         }
         //Конец блока для определения размеров из выпадающего списка
 
