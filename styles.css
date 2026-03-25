@@ -453,4 +453,41 @@
     padding: 8px 16px;
     min-width: 160px;
   }
+
+  /* ========== СТИЛИ ДЛЯ RULER И GRID CANVAS ========== */
+  .zolak-ruler-canvas,
+  .zolak-grid-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1001;
+  }
+
+  /* Дополнительный стиль для контейнера с контролами, чтобы разместить 4 кнопки */
+  .zolak-overlay-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    argin-right: 20px;
+    flex-wrap: wrap;
+  }
+
+  /* ========== АНИМАЦИИ ДЛЯ SWITCH-КНОПОК ========== */
+.zolak-switch-button {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* ========== АНИМАЦИИ ДЛЯ OVERLAY ========== */
+.zolak-canvas-overlay {
+  transition: all 0.2s ease, opacity 0.2s ease;
+}
+
+/* ========== АНИМАЦИИ ДЛЯ RULER И GRID ========== */
+.zolak-ruler-canvas,
+.zolak-grid-canvas {
+  transition: opacity 0.15s ease;
+}
 }
