@@ -404,60 +404,103 @@
       ctx.fillStyle = "#ff6b6b";
       ctx.lineWidth = 1;
 
-      ctx.beginPath();
-      ctx.moveTo(width / 2, 0);
-      ctx.lineTo(width / 2, height);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(0, height / 2);
-      ctx.lineTo(width, height / 2);
-      ctx.stroke();
-
+      // Центральные оси
       const centerX = width / 2;
       const centerY = height / 2;
 
-      for (let x = 0; x <= width; x += 10) {
-        const offsetX = x - centerX;
-        let lineHeight = 8;
+      ctx.beginPath();
+      ctx.moveTo(centerX, 0);
+      ctx.lineTo(centerX, height);
+      ctx.stroke();
 
-        if (Math.abs(offsetX) % 10 === 0) {
-          if (Math.abs(offsetX) % 50 === 0) {
+      ctx.beginPath();
+      ctx.moveTo(0, centerY);
+      ctx.lineTo(width, centerY);
+      ctx.stroke();
+
+      // Рисуем деления по горизонтали (от центра влево и вправо)
+      // Максимальное расстояние от центра до края
+      const maxXOffset = Math.max(centerX, width - centerX);
+
+      // Рисуем деления влево от центра (отрицательные координаты)
+      for (let offset = 0; offset <= maxXOffset; offset += 10) {
+        if (offset === 0) continue; // Пропускаем центр, там уже есть ось
+
+        const xLeft = centerX - offset;
+        const xRight = centerX + offset;
+
+        // Определяем высоту линии в зависимости от кратности
+        let lineHeight = 8;
+        if (offset % 10 === 0) {
+          if (offset % 50 === 0) {
             lineHeight = 24;
-          } else if (Math.abs(offsetX) % 20 === 0) {
+          } else if (offset % 20 === 0) {
             lineHeight = 12;
           } else {
             lineHeight = 8;
           }
         }
 
-        ctx.beginPath();
-        ctx.moveTo(x, centerY - lineHeight / 2);
-        ctx.lineTo(x, centerY + lineHeight / 2);
-        ctx.stroke();
+        // Деление слева
+        if (xLeft >= 0) {
+          ctx.beginPath();
+          ctx.moveTo(xLeft, centerY - lineHeight / 2);
+          ctx.lineTo(xLeft, centerY + lineHeight / 2);
+          ctx.stroke();
+        }
+
+        // Деление справа
+        if (xRight <= width) {
+          ctx.beginPath();
+          ctx.moveTo(xRight, centerY - lineHeight / 2);
+          ctx.lineTo(xRight, centerY + lineHeight / 2);
+          ctx.stroke();
+        }
       }
 
-      for (let y = 0; y <= height; y += 10) {
-        const offsetY = y - centerY;
-        let lineWidth = 8;
+      // Рисуем деления по вертикали (от центра вверх и вниз)
+      const maxYOffset = Math.max(centerY, height - centerY);
 
-        if (Math.abs(offsetY) % 10 === 0) {
-          if (Math.abs(offsetY) % 50 === 0) {
+      for (let offset = 0; offset <= maxYOffset; offset += 10) {
+        if (offset === 0) continue; // Пропускаем центр, там уже есть ось
+
+        const yTop = centerY - offset;
+        const yBottom = centerY + offset;
+
+        // Определяем ширину линии в зависимости от кратности
+        let lineWidth = 8;
+        if (offset % 10 === 0) {
+          if (offset % 50 === 0) {
             lineWidth = 24;
-          } else if (Math.abs(offsetY) % 20 === 0) {
+          } else if (offset % 20 === 0) {
             lineWidth = 12;
           } else {
             lineWidth = 8;
           }
         }
 
-        ctx.beginPath();
-        ctx.moveTo(centerX - lineWidth / 2, y);
-        ctx.lineTo(centerX + lineWidth / 2, y);
-        ctx.stroke();
+        // Деление сверху
+        if (yTop >= 0) {
+          ctx.beginPath();
+          ctx.moveTo(centerX - lineWidth / 2, yTop);
+          ctx.lineTo(centerX + lineWidth / 2, yTop);
+          ctx.stroke();
+        }
+
+        // Деление снизу
+        if (yBottom <= height) {
+          ctx.beginPath();
+          ctx.moveTo(centerX - lineWidth / 2, yBottom);
+          ctx.lineTo(centerX + lineWidth / 2, yBottom);
+          ctx.stroke();
+        }
       }
 
-      this.log("Ruler отрисован, размеры: " + width + "x" + height);
+      //Никаких подписей!
+
+      this.log(
+        "Ruler отрисован относительно центра, размеры: " + width + "x" + height,
+      );
     }
 
     removeRuler() {
