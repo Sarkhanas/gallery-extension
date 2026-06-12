@@ -735,15 +735,12 @@
         );
         const values = Array.from(inputs).map((input) => input.value);
 
-        if (values.includes("2048 × 2048 px (Square)")) {
+        if (values.includes("Square")) {
           this.log("Контейнер с размерами 2048 × 2048 px (Square) найден");
           containerWidth = containerHeight;
-        } else if (values.includes("2400 × 1600 px (Landscape)")) {
-          this.log("Контейнер с размерами 2400 × 1600 px (Landscape) найден");
-          containerWidth = containerWidth * 0.9375;
-        } else if (values.includes("2560 × 1440 px (Landscape)")) {
+        } else if (values.includes("Landscape")) {
           this.log("Контейнер с размерами 2560 × 1440 px (Landscape) найден");
-        } else if (values.includes("2000 × 2500 px (Portrait)")) {
+        } else if (values.includes("Portrait")) {
           this.log("Контейнер с размерами 2000 × 2500 px (Portrait) найден");
           containerWidth = containerHeight * 0.9765625;
         } else {
